@@ -448,11 +448,11 @@ export const InfluencerList = ({ onSelectCreatorForProposal, onOpenProposalWithC
             </div>
             
             <h2 className="text-2xl md:text-3xl font-black tracking-tight text-white">
-              Mom & Lifestyle <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-rose-300 to-amber-300">Creator Roster</span>
+              South India <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-rose-300 to-amber-300">Creator Roster</span>
             </h2>
             
             <p className="text-xs md:text-sm text-slate-300 leading-relaxed max-w-xl">
-              Track creator deliverables, engagement benchmarks, Cost-Per-View (CPV), and demographic splits across Chennai & South India.
+              Discover creators, compare engagement, Reel performance, audience insights, and estimated collaboration costs across Chennai & South India.
             </p>
           </div>
 

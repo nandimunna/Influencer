@@ -232,6 +232,19 @@ export const InfluencerList = ({ onSelectCreatorForProposal, onOpenProposalWithC
     };
   }, [influencers]);
 
+  // Dynamic Tier counts
+  const tierCounts = useMemo(() => {
+    return {
+      All: influencers.length,
+      Celebrity: influencers.filter(i => i.isCelebrity).length,
+      Mega: influencers.filter(i => i.followerCount >= 1000000).length,
+      Macro: influencers.filter(i => i.followerCount >= 250000 && i.followerCount < 1000000).length,
+      'Mid-Tier': influencers.filter(i => i.followerCount >= 50000 && i.followerCount < 250000).length,
+      Micro: influencers.filter(i => i.followerCount >= 10000 && i.followerCount < 50000).length,
+      Nano: influencers.filter(i => i.followerCount < 10000).length
+    };
+  }, [influencers]);
+
   // Selection handlers
   const handleToggleSelectCreator = (id) => {
     const updated = new Set(selectedCreatorIds);
@@ -454,59 +467,37 @@ export const InfluencerList = ({ onSelectCreatorForProposal, onOpenProposalWithC
           </div>
         </div>
 
-        {/* CREATOR TYPE INTERACTIVE ROW DIRECTLY UNDER MOM & LIFESTYLE BANNER */}
-        <div className="pt-4 border-t border-purple-500/20 space-y-2.5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2 text-xs font-bold text-pink-300 uppercase tracking-wider">
-              <Award className="w-3.5 h-3.5 text-amber-400" />
-              <span>CREATOR TYPE / FOLLOWER TIER CLASSIFICATION:</span>
-            </div>
-            
+        {/* CREATOR TYPE / FOLLOWER TIER CLASSIFICATION HEADER BAR */}
+        <div className="pt-3.5 border-t border-purple-500/20 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center space-x-2 text-xs font-bold text-pink-300 uppercase tracking-wider">
+            <Award className="w-3.5 h-3.5 text-amber-400" />
+            <span>CREATOR TYPE / FOLLOWER TIER CLASSIFICATION</span>
+            {selectedTier !== 'All' && (
+              <span className="text-[10px] bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full font-black normal-case">
+                Filtered: {selectedTier}
+              </span>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-3">
+            {selectedTier !== 'All' && (
+              <button
+                onClick={() => setSelectedTier('All')}
+                className="text-[11px] font-bold text-pink-300 hover:text-white underline flex items-center gap-1"
+              >
+                Reset to All ({influencers.length})
+              </button>
+            )}
             <button
               onClick={() => setShowTierTable(!showTierTable)}
               className="text-[11px] font-bold text-amber-300 hover:text-amber-200 underline flex items-center gap-1"
             >
-              <span>{showTierTable ? 'Hide Tier Breakdown' : 'View Full Tier Guide'}</span>
+              <span>{showTierTable ? 'Hide Breakdown Guide' : 'View Full Tier Guide'}</span>
             </button>
-          </div>
-
-          {/* Quick-filter Creator Type Buttons */}
-          <div className="flex flex-wrap items-center gap-2">
-            {CREATOR_TIERS.map((tier) => {
-              const isSelected = selectedTier === tier.value;
-              let count = 0;
-              if (tier.value === 'All') count = influencers.length;
-              else if (tier.value === 'Celebrity') count = influencers.filter(i => i.isCelebrity).length;
-              else if (tier.value === 'Mega') count = influencers.filter(i => i.followerCount >= 1000000).length;
-              else if (tier.value === 'Macro') count = influencers.filter(i => i.followerCount >= 250000 && i.followerCount < 1000000).length;
-              else if (tier.value === 'Mid-Tier') count = influencers.filter(i => i.followerCount >= 50000 && i.followerCount < 250000).length;
-              else if (tier.value === 'Micro') count = influencers.filter(i => i.followerCount >= 10000 && i.followerCount < 50000).length;
-              else if (tier.value === 'Nano') count = influencers.filter(i => i.followerCount < 10000).length;
-
-              return (
-                <button
-                  key={tier.value}
-                  onClick={() => setSelectedTier(tier.value)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 border ${
-                    isSelected
-                      ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-md scale-105'
-                      : 'bg-white/10 hover:bg-white/15 text-slate-200 border-white/10'
-                  }`}
-                >
-                  <span>{tier.name}</span>
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
-                    isSelected ? 'bg-slate-900 text-amber-300' : 'bg-purple-900/60 text-pink-300'
-                  }`}>
-                    {count}
-                  </span>
-                  <span className="text-[10px] opacity-75 hidden sm:inline font-mono">({tier.shortLabel})</span>
-                </button>
-              );
-            })}
           </div>
         </div>
 
-        {/* FULL CREATOR TYPE BREAKDOWN TABLE (Expanded directly under Mom & Lifestyle section) */}
+        {/* FULL CREATOR TYPE BREAKDOWN TABLE (When expanded) */}
         {showTierTable && (
           <div className="bg-[#120324]/90 rounded-2xl p-4 border border-purple-500/30 animate-in fade-in zoom-in-95 duration-150 mt-3">
             <div className="overflow-x-auto">
@@ -523,37 +514,37 @@ export const InfluencerList = ({ onSelectCreatorForProposal, onOpenProposalWithC
                   <tr className="hover:bg-purple-500/10">
                     <td className="py-2.5 px-3 font-extrabold text-amber-300">Celebrity</td>
                     <td className="py-2.5 px-3 text-right font-mono text-purple-200">Public figures / TV / Cinema / Sports personalities</td>
-                    <td className="py-2.5 px-3 text-right font-bold text-white">7 creators</td>
+                    <td className="py-2.5 px-3 text-right font-bold text-white">{tierCounts.Celebrity} creators</td>
                     <td className="py-2.5 px-3 text-right text-slate-300 text-[11px]">Alya Manasa, Sridevi Ashok, Hema Rajkumar, Sujitha, etc.</td>
                   </tr>
                   <tr className="hover:bg-purple-500/10">
                     <td className="py-2.5 px-3 font-extrabold text-amber-300">Mega Influencer</td>
                     <td className="py-2.5 px-3 text-right font-mono text-purple-200">1M+</td>
-                    <td className="py-2.5 px-3 text-right font-bold text-white">6 creators</td>
+                    <td className="py-2.5 px-3 text-right font-bold text-white">{tierCounts.Mega} creators</td>
                     <td className="py-2.5 px-3 text-right text-slate-300 text-[11px]">Sathish Deepa, Alya Manasa, Gayathri Yuvaraj</td>
                   </tr>
                   <tr className="hover:bg-purple-500/10">
                     <td className="py-2.5 px-3 font-extrabold text-amber-300">Macro Influencer</td>
                     <td className="py-2.5 px-3 text-right font-mono text-purple-200">250K – 1M</td>
-                    <td className="py-2.5 px-3 text-right font-bold text-white">8 creators</td>
+                    <td className="py-2.5 px-3 text-right font-bold text-white">{tierCounts.Macro} creators</td>
                     <td className="py-2.5 px-3 text-right text-slate-300 text-[11px]">Yummy Tummy arathi, Sri priya, Anjali, Shamili, Snazzy</td>
                   </tr>
                   <tr className="hover:bg-purple-500/10">
                     <td className="py-2.5 px-3 font-extrabold text-amber-300">Mid-Tier Influencer</td>
                     <td className="py-2.5 px-3 text-right font-mono text-purple-200">50K – 250K</td>
-                    <td className="py-2.5 px-3 text-right font-bold text-white">3 creators</td>
+                    <td className="py-2.5 px-3 text-right font-bold text-white">{tierCounts['Mid-Tier']} creators</td>
                     <td className="py-2.5 px-3 text-right text-slate-300 text-[11px]">Swetha Renukumar, Sunitha, Shikha Vijay</td>
                   </tr>
                   <tr className="hover:bg-purple-500/10">
                     <td className="py-2.5 px-3 font-extrabold text-amber-300">Micro Influencer</td>
                     <td className="py-2.5 px-3 text-right font-mono text-purple-200">10K – 50K</td>
-                    <td className="py-2.5 px-3 text-right font-bold text-slate-400">0 in roster</td>
+                    <td className="py-2.5 px-3 text-right font-bold text-slate-400">{tierCounts.Micro} in roster</td>
                     <td className="py-2.5 px-3 text-right text-slate-400 text-[11px]">Available for custom onboarding</td>
                   </tr>
                   <tr className="hover:bg-purple-500/10">
                     <td className="py-2.5 px-3 font-extrabold text-amber-300">Nano Influencer</td>
                     <td className="py-2.5 px-3 text-right font-mono text-purple-200">1K – 10K</td>
-                    <td className="py-2.5 px-3 text-right font-bold text-slate-400">0 in roster</td>
+                    <td className="py-2.5 px-3 text-right font-bold text-slate-400">{tierCounts.Nano} in roster</td>
                     <td className="py-2.5 px-3 text-right text-slate-400 text-[11px]">Available for custom onboarding</td>
                   </tr>
                 </tbody>
@@ -563,91 +554,151 @@ export const InfluencerList = ({ onSelectCreatorForProposal, onOpenProposalWithC
         )}
       </div>
 
-      {/* 3. SIX STAT METRIC CARDS GRID */}
+      {/* 3. SIX CREATOR TYPE / FOLLOWER TIER CLASSIFICATION CARDS */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
-        {/* Card 1: CREATORS */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between">
+        {/* Tier 1: CELEBRITY */}
+        <button
+          type="button"
+          onClick={() => setSelectedTier(selectedTier === 'Celebrity' ? 'All' : 'Celebrity')}
+          className={`rounded-2xl p-4 border text-left transition-all flex flex-col justify-between cursor-pointer group hover:shadow-md ${
+            selectedTier === 'Celebrity'
+              ? 'bg-amber-50/90 border-amber-400 ring-2 ring-amber-400/30 shadow-md'
+              : 'bg-white border-slate-200 shadow-sm hover:border-amber-300'
+          }`}
+        >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">CREATORS</span>
-            <div className="w-7 h-7 rounded-xl bg-pink-50 text-pink-600 flex items-center justify-center">
-              <Users className="w-3.5 h-3.5" />
+            <span className="text-[11px] font-black text-amber-800 uppercase tracking-wider">CELEBRITY</span>
+            <div className={`w-7 h-7 rounded-xl flex items-center justify-center transition-colors ${
+              selectedTier === 'Celebrity' ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-600 group-hover:bg-amber-500 group-hover:text-white'
+            }`}>
+              <Crown className="w-3.5 h-3.5" />
             </div>
           </div>
           <div className="mt-2">
-            <p className="text-2xl font-black text-slate-900">{influencers.length}</p>
-            <p className="text-[11px] font-bold text-emerald-600 mt-0.5">✓ {influencers.length} Active Records</p>
+            <p className="text-2xl font-black text-slate-900">{tierCounts.Celebrity} <span className="text-xs font-semibold text-slate-500">creators</span></p>
+            <p className="text-[11px] font-medium text-amber-700 mt-0.5 truncate">TV / Cinema / Sports</p>
           </div>
-        </div>
+        </button>
 
-        {/* Card 2: FOLLOWERS */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between">
+        {/* Tier 2: MEGA */}
+        <button
+          type="button"
+          onClick={() => setSelectedTier(selectedTier === 'Mega' ? 'All' : 'Mega')}
+          className={`rounded-2xl p-4 border text-left transition-all flex flex-col justify-between cursor-pointer group hover:shadow-md ${
+            selectedTier === 'Mega'
+              ? 'bg-purple-50/90 border-purple-400 ring-2 ring-purple-400/30 shadow-md'
+              : 'bg-white border-slate-200 shadow-sm hover:border-purple-300'
+          }`}
+        >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">FOLLOWERS</span>
-            <div className="w-7 h-7 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+            <span className="text-[11px] font-black text-purple-800 uppercase tracking-wider">MEGA</span>
+            <div className={`w-7 h-7 rounded-xl flex items-center justify-center transition-colors ${
+              selectedTier === 'Mega' ? 'bg-purple-600 text-white' : 'bg-purple-100 text-purple-600 group-hover:bg-purple-600 group-hover:text-white'
+            }`}>
+              <Star className="w-3.5 h-3.5" />
+            </div>
+          </div>
+          <div className="mt-2">
+            <p className="text-2xl font-black text-slate-900">{tierCounts.Mega} <span className="text-xs font-semibold text-slate-500">creators</span></p>
+            <p className="text-[11px] font-medium text-purple-700 mt-0.5">1M+ Followers</p>
+          </div>
+        </button>
+
+        {/* Tier 3: MACRO */}
+        <button
+          type="button"
+          onClick={() => setSelectedTier(selectedTier === 'Macro' ? 'All' : 'Macro')}
+          className={`rounded-2xl p-4 border text-left transition-all flex flex-col justify-between cursor-pointer group hover:shadow-md ${
+            selectedTier === 'Macro'
+              ? 'bg-blue-50/90 border-blue-400 ring-2 ring-blue-400/30 shadow-md'
+              : 'bg-white border-slate-200 shadow-sm hover:border-blue-300'
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-black text-blue-800 uppercase tracking-wider">MACRO</span>
+            <div className={`w-7 h-7 rounded-xl flex items-center justify-center transition-colors ${
+              selectedTier === 'Macro' ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white'
+            }`}>
+              <Flame className="w-3.5 h-3.5" />
+            </div>
+          </div>
+          <div className="mt-2">
+            <p className="text-2xl font-black text-slate-900">{tierCounts.Macro} <span className="text-xs font-semibold text-slate-500">creators</span></p>
+            <p className="text-[11px] font-medium text-blue-700 mt-0.5">250K – 1M Followers</p>
+          </div>
+        </button>
+
+        {/* Tier 4: MID-TIER */}
+        <button
+          type="button"
+          onClick={() => setSelectedTier(selectedTier === 'Mid-Tier' ? 'All' : 'Mid-Tier')}
+          className={`rounded-2xl p-4 border text-left transition-all flex flex-col justify-between cursor-pointer group hover:shadow-md ${
+            selectedTier === 'Mid-Tier'
+              ? 'bg-emerald-50/90 border-emerald-400 ring-2 ring-emerald-400/30 shadow-md'
+              : 'bg-white border-slate-200 shadow-sm hover:border-emerald-300'
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-black text-emerald-800 uppercase tracking-wider">MID-TIER</span>
+            <div className={`w-7 h-7 rounded-xl flex items-center justify-center transition-colors ${
+              selectedTier === 'Mid-Tier' ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white'
+            }`}>
               <Sparkles className="w-3.5 h-3.5" />
             </div>
           </div>
           <div className="mt-2">
-            <p className="text-2xl font-black text-slate-900">{stats.reach}</p>
-            <p className="text-[11px] text-slate-400 mt-0.5">Total Audience Pool</p>
+            <p className="text-2xl font-black text-slate-900">{tierCounts['Mid-Tier']} <span className="text-xs font-semibold text-slate-500">creators</span></p>
+            <p className="text-[11px] font-medium text-emerald-700 mt-0.5">50K – 250K Followers</p>
           </div>
-        </div>
+        </button>
 
-        {/* Card 3: AVG VIEWS */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between">
+        {/* Tier 5: MICRO */}
+        <button
+          type="button"
+          onClick={() => setSelectedTier(selectedTier === 'Micro' ? 'All' : 'Micro')}
+          className={`rounded-2xl p-4 border text-left transition-all flex flex-col justify-between cursor-pointer group hover:shadow-md ${
+            selectedTier === 'Micro'
+              ? 'bg-pink-50/90 border-pink-400 ring-2 ring-pink-400/30 shadow-md'
+              : 'bg-white border-slate-200 shadow-sm hover:border-pink-300'
+          }`}
+        >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">AVG VIEWS</span>
-            <div className="w-7 h-7 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-              <Eye className="w-3.5 h-3.5" />
+            <span className="text-[11px] font-black text-pink-800 uppercase tracking-wider">MICRO</span>
+            <div className={`w-7 h-7 rounded-xl flex items-center justify-center transition-colors ${
+              selectedTier === 'Micro' ? 'bg-pink-600 text-white' : 'bg-pink-100 text-pink-600 group-hover:bg-pink-600 group-hover:text-white'
+            }`}>
+              <Users className="w-3.5 h-3.5" />
             </div>
           </div>
           <div className="mt-2">
-            <p className="text-2xl font-black text-slate-900">{stats.views}</p>
-            <p className="text-[11px] text-slate-400 mt-0.5">Per Reel Run</p>
+            <p className="text-2xl font-black text-slate-900">{tierCounts.Micro} <span className="text-xs font-semibold text-slate-500">creators</span></p>
+            <p className="text-[11px] font-medium text-pink-700 mt-0.5">10K – 50K Followers</p>
           </div>
-        </div>
+        </button>
 
-        {/* Card 4: AVG ENG. RATE */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between">
+        {/* Tier 6: NANO */}
+        <button
+          type="button"
+          onClick={() => setSelectedTier(selectedTier === 'Nano' ? 'All' : 'Nano')}
+          className={`rounded-2xl p-4 border text-left transition-all flex flex-col justify-between cursor-pointer group hover:shadow-md ${
+            selectedTier === 'Nano'
+              ? 'bg-rose-50/90 border-rose-400 ring-2 ring-rose-400/30 shadow-md'
+              : 'bg-white border-slate-200 shadow-sm hover:border-rose-300'
+          }`}
+        >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">AVG ENG. RATE</span>
-            <div className="w-7 h-7 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-              <TrendingUp className="w-3.5 h-3.5" />
+            <span className="text-[11px] font-black text-rose-800 uppercase tracking-wider">NANO</span>
+            <div className={`w-7 h-7 rounded-xl flex items-center justify-center transition-colors ${
+              selectedTier === 'Nano' ? 'bg-rose-600 text-white' : 'bg-rose-100 text-rose-600 group-hover:bg-rose-600 group-hover:text-white'
+            }`}>
+              <Award className="w-3.5 h-3.5" />
             </div>
           </div>
           <div className="mt-2">
-            <p className="text-2xl font-black text-slate-900">{stats.er}</p>
-            <p className="text-[11px] font-bold text-amber-600 mt-0.5">High Social Impact</p>
+            <p className="text-2xl font-black text-slate-900">{tierCounts.Nano} <span className="text-xs font-semibold text-slate-500">creators</span></p>
+            <p className="text-[11px] font-medium text-rose-700 mt-0.5">1K – 10K Followers</p>
           </div>
-        </div>
-
-        {/* Card 5: AVG CPV */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">AVG CPV</span>
-            <div className="w-7 h-7 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <DollarSign className="w-3.5 h-3.5" />
-            </div>
-          </div>
-          <div className="mt-2">
-            <p className="text-2xl font-black text-slate-900">{stats.cpv}</p>
-            <p className="text-[11px] text-slate-400 mt-0.5">Cost per video view</p>
-          </div>
-        </div>
-
-        {/* Card 6: FEMALE AVG */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">FEMALE AVG</span>
-            <div className="w-7 h-7 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
-              <PieIcon className="w-3.5 h-3.5" />
-            </div>
-          </div>
-          <div className="mt-2">
-            <p className="text-2xl font-black text-rose-600">{stats.female}</p>
-            <p className="text-[11px] text-slate-400 mt-0.5">Mom & Home Niche</p>
-          </div>
-        </div>
+        </button>
       </div>
 
       {/* 4. SEARCH & FILTER CONTROLS BAR */}

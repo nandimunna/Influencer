@@ -126,11 +126,10 @@ export const Navbar = ({ activeTab, setActiveTab, onGlobalSearch }) => {
                   onClick={() => {
                     setShowRoleMenu(false);
                     logout();
-                    window.location.reload();
                   }}
-                  className="w-full py-1.5 px-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-300 border border-red-500/20 text-[11px] font-semibold text-center transition-colors"
+                  className="w-full py-2 px-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-300 border border-red-500/20 text-xs font-bold text-center transition-colors cursor-pointer"
                 >
-                  Sign Out / In-House Login Screen
+                  Sign Out to Login Screen
                 </button>
               </div>
             </div>

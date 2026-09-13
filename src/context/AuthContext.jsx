@@ -25,21 +25,17 @@ export const AuthProvider = ({ children }) => {
           const meRes = await api.getMe();
           if (meRes.success && meRes.user) {
             setUser(meRes.user);
-            setLoading(false);
-            return;
+          } else {
+            localStorage.removeItem('nex_token');
+            setUser(null);
           }
         } catch (e) {
-          console.warn('Session expired, defaulting to Admin');
+          console.warn('Session expired');
+          localStorage.removeItem('nex_token');
+          setUser(null);
         }
-      }
-
-      if (demoRes.users && demoRes.users.length > 0) {
-        const defaultAdmin = demoRes.users[0];
-        const loginRes = await api.login(defaultAdmin.email, 'admin123');
-        if (loginRes.success) {
-          localStorage.setItem('nex_token', loginRes.token);
-          setUser(loginRes.user);
-        }
+      } else {
+        setUser(null);
       }
     } catch (err) {
       console.error('Auth initialization error:', err);

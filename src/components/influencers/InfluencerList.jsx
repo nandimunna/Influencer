@@ -84,6 +84,7 @@ export const InfluencerList = ({ onSelectCreatorForProposal, onOpenProposalWithC
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [editingInfluencer, setEditingInfluencer] = useState(null);
+  const [proposalsCount, setProposalsCount] = useState(3);
 
   useEffect(() => {
     fetchInfluencers();
@@ -124,6 +125,16 @@ export const InfluencerList = ({ onSelectCreatorForProposal, onOpenProposalWithC
         });
 
         setInfluencers(mapped);
+      }
+
+      // Fetch proposals count dynamically
+      try {
+        const propRes = await api.getProposals();
+        if (propRes.success && propRes.proposals) {
+          setProposalsCount(propRes.proposals.length);
+        }
+      } catch (e) {
+        // keep fallback
       }
     } catch (err) {
       console.error('Failed to fetch influencers', err);
@@ -445,113 +456,21 @@ export const InfluencerList = ({ onSelectCreatorForProposal, onOpenProposalWithC
             </p>
           </div>
 
-          {/* EXACT 3 GLASS STAT CARDS MATCHING SCREENSHOT */}
+          {/* STAT CARDS: TOTAL CREATORS & TOTAL PROPOSALS */}
           <div className="flex flex-wrap sm:flex-nowrap items-center gap-3.5">
-            {/* Pill 1: Total Roster Reach */}
-            <div className="bg-[#2c124a]/85 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-purple-400/20 min-w-[135px] text-center shadow-lg">
-              <p className="text-[12px] text-slate-300 font-medium tracking-wide">Total Roster Reach</p>
-              <p className="text-2xl md:text-3xl font-black text-white mt-1.5 tracking-tight">{stats.reach}</p>
+            {/* Pill 1: Total Creators */}
+            <div className="bg-[#2c124a]/85 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-purple-400/20 min-w-[145px] text-center shadow-lg">
+              <p className="text-[12px] text-slate-300 font-medium tracking-wide">Total Creators</p>
+              <p className="text-2xl md:text-3xl font-black text-white mt-1.5 tracking-tight">{influencers.length}</p>
             </div>
 
-            {/* Pill 2: Avg Engagement (Golden Yellow) */}
-            <div className="bg-[#2c124a]/85 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-purple-400/20 min-w-[135px] text-center shadow-lg">
-              <p className="text-[12px] text-slate-300 font-medium tracking-wide">Avg Engagement</p>
-              <p className="text-2xl md:text-3xl font-black text-[#FFD15C] mt-1.5 tracking-tight">{stats.er}</p>
-            </div>
-
-            {/* Pill 3: Blended CPV (Mint Green) */}
-            <div className="bg-[#2c124a]/85 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-purple-400/20 min-w-[135px] text-center shadow-lg">
-              <p className="text-[12px] text-slate-300 font-medium tracking-wide">Blended CPV</p>
-              <p className="text-2xl md:text-3xl font-black text-[#4EEDB8] mt-1.5 tracking-tight">{stats.cpv}</p>
+            {/* Pill 2: Total Proposals */}
+            <div className="bg-[#2c124a]/85 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-purple-400/20 min-w-[145px] text-center shadow-lg">
+              <p className="text-[12px] text-slate-300 font-medium tracking-wide">Total Proposals</p>
+              <p className="text-2xl md:text-3xl font-black text-[#FFD15C] mt-1.5 tracking-tight">{proposalsCount}</p>
             </div>
           </div>
         </div>
-
-        {/* CREATOR TYPE / FOLLOWER TIER CLASSIFICATION HEADER BAR */}
-        <div className="pt-3.5 border-t border-purple-500/20 flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center space-x-2 text-xs font-bold text-pink-300 uppercase tracking-wider">
-            <Award className="w-3.5 h-3.5 text-amber-400" />
-            <span>CREATOR TYPE / FOLLOWER TIER CLASSIFICATION</span>
-            {selectedTier !== 'All' && (
-              <span className="text-[10px] bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full font-black normal-case">
-                Filtered: {selectedTier}
-              </span>
-            )}
-          </div>
-          
-          <div className="flex items-center gap-3">
-            {selectedTier !== 'All' && (
-              <button
-                onClick={() => setSelectedTier('All')}
-                className="text-[11px] font-bold text-pink-300 hover:text-white underline flex items-center gap-1"
-              >
-                Reset to All ({influencers.length})
-              </button>
-            )}
-            <button
-              onClick={() => setShowTierTable(!showTierTable)}
-              className="text-[11px] font-bold text-amber-300 hover:text-amber-200 underline flex items-center gap-1"
-            >
-              <span>{showTierTable ? 'Hide Breakdown Guide' : 'View Full Tier Guide'}</span>
-            </button>
-          </div>
-        </div>
-
-        {/* FULL CREATOR TYPE BREAKDOWN TABLE (When expanded) */}
-        {showTierTable && (
-          <div className="bg-[#120324]/90 rounded-2xl p-4 border border-purple-500/30 animate-in fade-in zoom-in-95 duration-150 mt-3">
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs text-left">
-                <thead>
-                  <tr className="border-b border-purple-500/30 text-slate-400 font-bold uppercase text-[11px]">
-                    <th className="py-2 px-3">Creator Type</th>
-                    <th className="py-2 px-3 text-right">Follower Count</th>
-                    <th className="py-2 px-3 text-right">Creators Count</th>
-                    <th className="py-2 px-3 text-right">Scope / Profiles</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-purple-500/20 text-slate-200">
-                  <tr className="hover:bg-purple-500/10">
-                    <td className="py-2.5 px-3 font-extrabold text-amber-300">Celebrity</td>
-                    <td className="py-2.5 px-3 text-right font-mono text-purple-200">Public figures / TV / Cinema / Sports personalities</td>
-                    <td className="py-2.5 px-3 text-right font-bold text-white">{tierCounts.Celebrity} creators</td>
-                    <td className="py-2.5 px-3 text-right text-slate-300 text-[11px]">Alya Manasa, Sridevi Ashok, Hema Rajkumar, Sujitha, etc.</td>
-                  </tr>
-                  <tr className="hover:bg-purple-500/10">
-                    <td className="py-2.5 px-3 font-extrabold text-amber-300">Mega Influencer</td>
-                    <td className="py-2.5 px-3 text-right font-mono text-purple-200">1M+</td>
-                    <td className="py-2.5 px-3 text-right font-bold text-white">{tierCounts.Mega} creators</td>
-                    <td className="py-2.5 px-3 text-right text-slate-300 text-[11px]">Sathish Deepa, Alya Manasa, Gayathri Yuvaraj</td>
-                  </tr>
-                  <tr className="hover:bg-purple-500/10">
-                    <td className="py-2.5 px-3 font-extrabold text-amber-300">Macro Influencer</td>
-                    <td className="py-2.5 px-3 text-right font-mono text-purple-200">250K – 1M</td>
-                    <td className="py-2.5 px-3 text-right font-bold text-white">{tierCounts.Macro} creators</td>
-                    <td className="py-2.5 px-3 text-right text-slate-300 text-[11px]">Yummy Tummy arathi, Sri priya, Anjali, Shamili, Snazzy</td>
-                  </tr>
-                  <tr className="hover:bg-purple-500/10">
-                    <td className="py-2.5 px-3 font-extrabold text-amber-300">Mid-Tier Influencer</td>
-                    <td className="py-2.5 px-3 text-right font-mono text-purple-200">50K – 250K</td>
-                    <td className="py-2.5 px-3 text-right font-bold text-white">{tierCounts['Mid-Tier']} creators</td>
-                    <td className="py-2.5 px-3 text-right text-slate-300 text-[11px]">Swetha Renukumar, Sunitha, Shikha Vijay</td>
-                  </tr>
-                  <tr className="hover:bg-purple-500/10">
-                    <td className="py-2.5 px-3 font-extrabold text-amber-300">Micro Influencer</td>
-                    <td className="py-2.5 px-3 text-right font-mono text-purple-200">10K – 50K</td>
-                    <td className="py-2.5 px-3 text-right font-bold text-slate-400">{tierCounts.Micro} in roster</td>
-                    <td className="py-2.5 px-3 text-right text-slate-400 text-[11px]">Available for custom onboarding</td>
-                  </tr>
-                  <tr className="hover:bg-purple-500/10">
-                    <td className="py-2.5 px-3 font-extrabold text-amber-300">Nano Influencer</td>
-                    <td className="py-2.5 px-3 text-right font-mono text-purple-200">1K – 10K</td>
-                    <td className="py-2.5 px-3 text-right font-bold text-slate-400">{tierCounts.Nano} in roster</td>
-                    <td className="py-2.5 px-3 text-right text-slate-400 text-[11px]">Available for custom onboarding</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* 3. SIX CREATOR TYPE / FOLLOWER TIER CLASSIFICATION CARDS */}
